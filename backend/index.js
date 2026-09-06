@@ -20,9 +20,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.listen(5000,function(){
-    console.log("Server is running on port 5000");
-})
+
 
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
@@ -114,6 +112,12 @@ app.post("/sendemail", function(req, res) {
 }    
 
 )
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, function(){
+    console.log(`Server is running on port ${PORT}`);
+});
 
 
   
