@@ -40,7 +40,7 @@ function BulkMail() {
     setstatus(true);
 
     axios
-      .post("http://localhost:5000/sendemail", {
+      .post(`${process.env.REACT_APP_API_URL}/sendemail`, {
         subject: subject,
         msg: msg,
         emailList: emailList

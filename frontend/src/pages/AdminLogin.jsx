@@ -15,7 +15,7 @@ function AdminLogin() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/login",
+        "https://bulkmail-6kow.onrender.com/api/login",
         {
           username,
           password
