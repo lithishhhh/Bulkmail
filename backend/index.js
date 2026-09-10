@@ -53,6 +53,9 @@ const credential = mongoose.model("credential", {}, "bulkmail");
 
 
 app.post("/sendemail", async (req, res) => {
+
+   console.log("🔥 SEND EMAIL ROUTE HIT");
+
   try {
     const msg = req.body.msg;
     const emailList = req.body.emailList;
