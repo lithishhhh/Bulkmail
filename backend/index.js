@@ -73,13 +73,17 @@ app.post("/sendemail", async (req, res) => {
       return res.status(500).send("No credentials found");
     }
 
+   
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: data[0].user,
-        pass: data[0].pass,
-      },
-    });
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: data[0].user,
+    pass: data[0].pass,
+  },
+});
 
     for (let i = 0; i < emailList.length; i++) {
       await transporter.sendMail({
