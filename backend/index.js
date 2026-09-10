@@ -52,65 +52,50 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 const credential = mongoose.model("credential", {}, "bulkmail");
 
 
-app.post("/sendemail",async function (req, res) {
+app.post("/sendemail", async function (req, res) {
 
-  var msg = req.body.msg;
-  console.log(msg);
-  var emailList = req.body.emailList;
-  console.log(emailList);
+    try {
 
-  var subject = req.body.subject;
-  console.log(subject);
+        const msg = req.body.msg;
+        const emailList = req.body.emailList;
+        const subject = req.body.subject;
 
-  credential.find().then((data) => {
+        console.log("Subject:", subject);
+        console.log("Email List:", emailList);
 
-    console.log("Credential data:", data)
+        const data = await credential.find();
 
+        console.log("Credential data:", data);
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: data[0].toJSON().user,
-        pass: data[0].toJSON().pass,
-      },
-    });
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: data[0].toJSON().user,
+                pass: data[0].toJSON().pass,
+            },
+        });
 
+        for (let i = 0; i < emailList.length; i++) {
 
-    new Promise(async (resolve, reject) => {
-      try {
+            await transporter.sendMail({
+                from: data[0].toJSON().user,
+                to: emailList[i],
+                subject: subject,
+                text: msg,
+            });
 
-        for (var i = 0; i < emailList.length; i++) {
-
-          await transporter.sendMail({
-            from: "lithishv141@gmail.com",
-            to: emailList[i],
-            subject: subject,
-            text: msg,
-          });
-
-          console.log("Email sent to " + emailList[i]);
+            console.log("Email sent to:", emailList[i]);
         }
-        resolve("Success");
 
-      }
-
-      catch (error) {
-
-        reject("Failed");
-
-      }
-    })
-      .then(() => {
         res.send(true);
-      })
-      .catch(() => {
-        res.send(false);
-      })
-  })
 
-}
+    } catch (error) {
 
-)
+        console.error("EMAIL ERROR:", error);
+
+        res.status(500).send(false);
+    }
+});
 
 const PORT = process.env.PORT || 5000;
 
