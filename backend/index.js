@@ -10,9 +10,10 @@ dns.setServers([
 require("dotenv").config();
 
 
+const { AgentMailClient } = require("agentmail");
 const express = require("express");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
+
 const mongoose = require("mongoose");
 
 
@@ -23,6 +24,10 @@ app.use(cors());
 app.use(express.json());
 
 
+
+const agentmail = new AgentMailClient({
+  apiKey: process.env.AGENTMAIL_API_KEY
+});
 
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
@@ -51,61 +56,44 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
   console.error("Error connecting to database:", err);
 });
 
-const credential = mongoose.model("credential", {}, "bulkmail");
 
 
 app.post("/sendemail", async (req, res) => {
-
-   console.log("🔥 SEND EMAIL ROUTE HIT");
-
   try {
     const msg = req.body.msg;
     const emailList = req.body.emailList;
     const subject = req.body.subject;
 
+    console.log("🔥 SEND EMAIL ROUTE HIT");
     console.log("Subject:", subject);
     console.log("Email List:", emailList);
 
-    const data = await credential.find();
-
-    console.log("Credential data:", data);
-
-    if (data.length === 0) {
-      console.log("❌ No credentials found in MongoDB");
-      return res.status(500).send("No credentials found");
-    }
-
-   
-
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: data[0].user,
-    pass: data[0].pass,
-  },
-});
-
     for (let i = 0; i < emailList.length; i++) {
-      await transporter.sendMail({
-        from: data[0].user,
-        to: emailList[i],
-        subject: subject,
-        text: msg,
-      });
 
-      console.log("Email sent to:", emailList[i]);
+      const result = await agentmail.inboxes.messages.send(
+        "bulkmail@agentmail.to",
+        {
+          to: emailList[i],
+          subject: subject,
+          text: msg,
+          html: `<p>${msg}</p>`
+        }
+      );
+
+      console.log("✅ Email sent to:", emailList[i]);
+      console.log("AgentMail ID:", result.messageId);
     }
 
     res.send(true);
 
   } catch (error) {
-    console.error("❌ EMAIL ERROR:", error);
+
+    console.log("❌ EMAIL ERROR:", error);
+
     res.status(500).send(false);
   }
 });
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, function () {

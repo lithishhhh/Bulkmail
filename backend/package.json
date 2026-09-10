@@ -4,17 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-     "start": "node index.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "agentmail": "^0.5.23",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.9.4",
-    "nodemailer": "^9.1.0"
+    "nodemailer": "^9.1.0",
+    "resend": "^6.27.0"
   }
 }
