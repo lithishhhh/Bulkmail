@@ -75,10 +75,11 @@ app.post("/sendemail", async (req, res) => {
 
    
 
-    const transporter = nodemailer.createTransport({
+
+const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
     user: data[0].user,
     pass: data[0].pass,
