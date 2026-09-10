@@ -52,51 +52,50 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 const credential = mongoose.model("credential", {}, "bulkmail");
 
 
-app.post("/sendemail", async function (req, res) {
+app.post("/sendemail", async (req, res) => {
+  try {
+    const msg = req.body.msg;
+    const emailList = req.body.emailList;
+    const subject = req.body.subject;
 
-    try {
+    console.log("Subject:", subject);
+    console.log("Email List:", emailList);
 
-        const msg = req.body.msg;
-        const emailList = req.body.emailList;
-        const subject = req.body.subject;
+    const data = await credential.find();
 
-        console.log("Subject:", subject);
-        console.log("Email List:", emailList);
+    console.log("Credential data:", data);
 
-        const data = await credential.find();
-
-        console.log("Credential data:", data);
-
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: data[0].toJSON().user,
-                pass: data[0].toJSON().pass,
-            },
-        });
-
-        for (let i = 0; i < emailList.length; i++) {
-
-            await transporter.sendMail({
-                from: data[0].toJSON().user,
-                to: emailList[i],
-                subject: subject,
-                text: msg,
-            });
-
-            console.log("Email sent to:", emailList[i]);
-        }
-
-        res.send(true);
-
-    } catch (error) {
-
-        console.error("EMAIL ERROR:", error);
-
-        res.status(500).send(false);
+    if (data.length === 0) {
+      console.log("❌ No credentials found in MongoDB");
+      return res.status(500).send("No credentials found");
     }
-});
 
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: data[0].user,
+        pass: data[0].pass,
+      },
+    });
+
+    for (let i = 0; i < emailList.length; i++) {
+      await transporter.sendMail({
+        from: data[0].user,
+        to: emailList[i],
+        subject: subject,
+        text: msg,
+      });
+
+      console.log("Email sent to:", emailList[i]);
+    }
+
+    res.send(true);
+
+  } catch (error) {
+    console.error("❌ EMAIL ERROR:", error);
+    res.status(500).send(false);
+  }
+});
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, function () {
